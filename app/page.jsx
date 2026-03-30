@@ -61,7 +61,7 @@ export default function Page() {
             const res = await fetch('/api/analyze', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ repoUrl: url })
+                body: JSON.stringify({ repoUrl: url.trim() }) // BUG #2 FIX: trim before sending
             })
             const json = await res.json()
             if (!res.ok) throw new Error(json.error)
@@ -109,13 +109,17 @@ export default function Page() {
                     <div style={{ display: 'flex', gap: '12px', maxWidth: '600px' }}>
                         <input
                             value={url}
-                            onChange={e => setUrl(e.target.value)}
+                            onChange={e => {
+                                setUrl(e.target.value)
+                                if (error) setError(null) // BUG #3 FIX: clear error on input change
+                            }}
                             onKeyDown={e => e.key === 'Enter' && analyze()}
                             placeholder="https://github.com/owner/repo"
                             style={{
                                 flex: 1, background: 'var(--bg-card)', border: '1px solid var(--border)',
                                 borderRadius: '10px', padding: '12px 16px', color: 'var(--text)',
-                                fontSize: '14px', outline: 'none', fontFamily: sans, transition: 'border-color 0.2s'
+                                fontSize: '14px', outline: 'none', fontFamily: sans, transition: 'border-color 0.2s',
+                                whiteSpace: 'nowrap', overflowX: 'auto' // BUG #1 FIX: handle long URLs
                             }}
                             onFocus={e => e.target.style.borderColor = 'var(--accent)'}
                             onBlur={e => e.target.style.borderColor = 'var(--border)'}
